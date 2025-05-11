@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PostureAI Chat Assistant</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* Navbar Styles */
+    .navbar {
+      background-color: white;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #4361ee;
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: #212529;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .nav-links a:hover {
+      color: #4361ee;
+      background-color: rgba(67, 97, 238, 0.1);
+    }
+
+    .nav-links a.active {
+      color: white;
+      background-color: #4361ee;
+    }
+
+    /* Chat Page Styles */
+    body {
+      background: #cdceda;
+      font-family: 'Inter', sans-serif;
+      color: #E6E6F0;
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+      overflow-y: auto;
+      padding: 32px 16px;
+    }
+
+    .message {
+      display: flex;
+      padding: 18px 24px;
+      margin-bottom: 12px;
+      border-radius: 10px;
+    }
+
+    .ai-message {
+      background-color: rgba(255, 255, 255, 0.04);
+    }
+
+    .user-message {
+      background-color: transparent;
+    }
+
+    .message-content {
+      display: flex;
+      width: 100%;
+    }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 16px;
+      flex-shrink: 0;
+      font-size: 18px;
+    }
+
+    .ai-avatar {
+      background: linear-gradient(135deg, #3F51B5, #5C6BC0);
+      color: #ffffff;
+    }
+
+    .user-avatar {
+      background: #FFFFFF;
+      color: #1C1F3A;
+    }
+
+    .message-text {
+      flex: 1;
+      line-height: 1.7;
+      font-size: 15px;
+      color:#3F51B5;
+    }
+
+    .input-area {
+      padding: 20px;
+      background-color: #121429;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      position: sticky;
+      bottom: 0;
+      z-index: 10;
+    }
+
+    .input-container {
+      max-width: 800px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    #message-input {
+      width: 100%;
+      padding: 14px 48px 14px 16px;
+      border-radius: 10px;
+      border: 1px solid #3F51B5;
+      background: rgba(255, 255, 255, 0.03);
+      color: #E6E6F0;
+      font-size: 16px;
+      resize: none;
+      min-height: 40px;
+      max-height: 200px;
+      outline: none;
+      transition: border 0.3s, box-shadow 0.3s;
+      box-sizing: border-box;
+    }
+
+    #message-input:focus {
+      border-color: #5C6BC0;
+      box-shadow: 0 0 0 3px rgba(92, 107, 192, 0.3);
+    }
+
+    #send-button {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      background: none;
+      border: none;
+      color: #AAB4F5;
+      cursor: pointer;
+      font-size: 18px;
+      transition: color 0.3s, transform 0.2s ease;
+    }
+
+    #send-button:hover {
+      color: #FFFFFF;
+      transform: scale(1.1);
+    }
+
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .typing-indicator span {
+      width: 6px;
+      height: 6px;
+      background: #AAB4F5;
+      border-radius: 50%;
+      display: inline-block;
+      opacity: 0.8;
+    }
+
+    .typing-indicator span:nth-child(1) { animation: typingAnimation 1s infinite 0s; }
+    .typing-indicator span:nth-child(2) { animation: typingAnimation 1s infinite 0.2s; }
+    .typing-indicator span:nth-child(3) { animation: typingAnimation 1s infinite 0.4s; }
+
+    @keyframes typingAnimation {
+      0%   { transform: translateY(0); opacity: 0.8; }
+      50%  { transform: translateY(-4px); opacity: 1; }
+      100% { transform: translateY(0); opacity: 0.8; }
+    }
+
+    pre {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+
+    code {
+      font-family: monospace;
+      font-size: 14px;
+    }
+
+    .message-text a {
+      color: #AAB4F5;
+      text-decoration: underline;
+    }
+
+    .message-text a:hover {
+      color: #FFFFFF;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background-color: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <!-- ✅ Integrated Navbar -->
+  <nav class="navbar">
+    <a href="index.html" class="logo">
+      <i class="fas fa-posture"></i>
+      PostureAI
+    </a>
+    <div class="nav-links">
+      <a href="index.html"><i class="fas fa-home"></i> Home</a>
+      <a href="chat.html" class="active"><i class="fas fa-robot"></i> AI Chat</a>
+      <a href="sign-up.html"><i class="fas fa-user-plus"></i> Sign Up</a>
+    </div>
+  </nav>
+
+  <!-- Chat Interface -->
+  <div class="chat-container" id="chat-container">
+    <div class="message ai-message">
+      <div class="message-content">
+        <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
+        <div class="message-text">
+          Hello! I'm your PostureAI assistant. Ask me anything about suggestions, opinion, or pain!
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="input-area">
+    <div class="input-container">
+      <textarea id="message-input" placeholder="Ask me anything..." rows="1"></textarea>
+      <button id="send-button"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <!-- JS -->
+  <script>
+    const TOGETHER_API_KEY = 'tgp_v1_DH5WnL0d6bMMWkrEqPjWYf9zUSVhNiD3kwU52CCawfo';
+    const chatContainer = document.getElementById('chat-container');
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
+
+    messageInput.addEventListener('input', function () {
+      this.style.height = 'auto';
+      this.style.height = this.scrollHeight + 'px';
+    });
+
+    messageInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    sendButton.addEventListener('click', sendMessage);
+
+    function sendMessage() {
+      const message = messageInput.value.trim();
+      if (!message) return;
+      addMessage('user', message);
+      messageInput.value = '';
+      messageInput.style.height = 'auto';
+      showTypingIndicator();
+      getAIResponse(message);
+    }
+
+    function addMessage(role, content) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = role === 'user' ? 'message user-message' : 'message ai-message';
+      messageDiv.innerHTML = `
+        <div class="message-content">
+          <div class="avatar ${role === 'user' ? 'user-avatar' : 'ai-avatar'}">
+            <i class="fas ${role === 'user' ? 'fa-user' : 'fa-robot'}"></i>
+          </div>
+          <div class="message-text">${content}</div>
+        </div>`;
+      chatContainer.appendChild(messageDiv);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function showTypingIndicator() {
+      const typingDiv = document.createElement('div');
+      typingDiv.className = 'message ai-message';
+      typingDiv.id = 'typing-indicator';
+      typingDiv.innerHTML = `
+        <div class="message-content">
+          <div class="avatar ai-avatar"><i class="fas fa-robot"></i></div>
+          <div class="typing-indicator"><span></span><span></span><span></span></div>
+        </div>`;
+      chatContainer.appendChild(typingDiv);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function hideTypingIndicator() {
+      const typing = document.getElementById('typing-indicator');
+      if (typing) typing.remove();
+    }
+
+    async function getAIResponse(message) {
+      try {
+        const prompt = `You are a helpful Posture assistant. Answer questions related to Posture AI.\nUser: ${message}`;
+        const response = await fetch("https://api.together.xyz/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${TOGETHER_API_KEY}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model: "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
+            messages: [{ role: "user", content: prompt }]
+          })
+        });
+        const data = await response.json();
+        const aiReply = data.choices[0].message.content;
+        hideTypingIndicator();
+        addMessage("ai", formatResponse(aiReply));
+      } catch (err) {
+        console.error(err);
+        hideTypingIndicator();
+        addMessage("ai", "Oops! Something went wrong. Please try again shortly.");
+      }
+    }
+
+    function formatResponse(text) {
+      return text
+        .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>')
+        .replace(/\n/g, '<br>');
+    }
+
+    window.onload = () => messageInput.focus();
+  </script>
+</body>
+</html>

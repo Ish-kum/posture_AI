@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Posture Detector | AI Health Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4cc9f0;
+            --success-color: #4CAF50;
+            --danger-color: #f72585;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --gray-color: #6c757d;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7ff;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+
+        .navbar {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .logo i {
+            font-size: 1.8rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark-color);
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+            background-color: rgba(67, 97, 238, 0.1);
+        }
+
+        .nav-links a.active {
+            color: white;
+            background-color: var(--primary-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--gray-color);
+            max-width: 700px;
+            margin: 0 auto 2rem;
+        }
+
+        .detector-container {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .detector-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 1.5rem;
+        }
+
+        .detector-header h2 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+        }
+
+        .control-panel {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .control-btn {
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 0.8rem 1.8rem;
+            cursor: pointer;
+            background-color: var(--success-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .control-btn:hover {
+            background-color: #3e8e41;
+            transform: translateY(-2px);
+        }
+
+        .control-btn.stop {
+            background-color: var(--danger-color);
+        }
+
+        .control-btn.stop:hover {
+            background-color: #e3176a;
+        }
+
+        .timer-select {
+            padding: 12px 20px;
+            border-radius: var(--border-radius);
+            border: 2px solid var(--primary-color);
+            background: white;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        .timer-display {
+            font-size: 18px;
+            margin-left: 10px;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .frame-container {
+            border: 3px solid var(--primary-color);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .frame-container::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                rgba(67, 97, 238, 0.05) 0%,
+                rgba(76, 201, 240, 0.05) 100%
+            );
+            z-index: 0;
+        }
+
+        canvas {
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+            max-width: 100%;
+            height: auto;
+        }
+
+        #label-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            width: 100%;
+            gap: 0.8rem;
+            z-index: 1;
+        }
+
+        .label {
+            padding: 0.8rem 1rem;
+            border-radius: var(--border-radius);
+            color: white;
+            font-weight: 600;
+            transition: var(--transition);
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            background-color: var(--gray-color);
+        }
+
+        .label.good {
+            background-color: var(--success-color);
+        }
+
+        .label.bad {
+            background-color: var(--danger-color);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(247, 37, 133, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(247, 37, 133, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(247, 37, 133, 0);
+            }
+        }
+
+        .break-alert {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--danger-color);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(247, 37, 133, 0.3);
+            z-index: 1000;
+            text-align: center;
+            display: none;
+        }
+
+        .break-alert button {
+            background: white;
+            color: var(--danger-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .stats-container {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            width: 100%;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 1.5rem;
+            text-align: center;
+            min-width: 150px;
+            flex: 1;
+        }
+
+        .stat-card h3 {
+            color: var(--gray-color);
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card p {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray-color);
+            font-size: 0.9rem;
+            margin-top: 3rem;
+            border-top: 1px solid #eee;
+        }
+
+        @media only screen and (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                padding: 1rem;
+            }
+
+            .nav-links {
+                margin-top: 1rem;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .detector-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .control-panel {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .control-btn, .timer-select {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .frame-container {
+                padding: 1rem;
+            }
+
+            .stats-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="#" class="logo">
+            <i class="fas fa-posture"></i>
+            PostureAI
+        </a>
+        <div class="nav-links">
+            <a href="index.html" class="active"><i class="fas fa-home"></i> Home</a>
+            <a href="chat.html"><i class="fas fa-robot"></i> AI Chat</a>
+            <a href="sign-up.html"><i class="fas fa-user-plus"></i> Sign Up</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <section class="hero">
+            <h1>Posture Detection Technology</h1>
+            <p>Improve your sitting posture and prevent back pain with our AI-powered posture detector. Get real-time feedback and alerts when your posture needs correction.</p>
+        </section>
+
+        <section class="detector-container">
+            <div class="detector-header">
+                <h2><i class="fas fa-video"></i> Posture Detection</h2>
+                <div class="control-panel">
+                    <button id="toggleButton" class="control-btn">
+                        <i class="fas fa-play"></i> Start Detection
+                    </button>
+                    <select id="breakTimer" class="timer-select">
+                        <option value="0">Screen Break Timer</option>
+                        <option value="10">10 minutes</option>
+                        <option value="20">20 minutes</option>
+                        <option value="30">30 minutes</option>
+                        <option value="60">1 hour</option>
+                        <option value="90">1.5 hours</option>
+                        <option value="120">2 hours</option>
+                    </select>
+                    <span id="timerDisplay" class="timer-display"></span>
+                </div>
+            </div>
+
+            <div class="frame-container">
+                <canvas id="canvas"></canvas>
+                <div id="label-container"></div>
+            </div>
+
+            <div class="stats-container">
+                <div class="stat-card">
+                    <h3>Posture Score</h3>
+                    <p id="postureScore">0%</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Good Posture Time</h3>
+                    <p id="goodPostureTime">0s</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Alerts</h3>
+                    <p id="alertCount">0</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div id="breakAlert" class="break-alert">
+        <h2>🕒 Time for a Screen Break!</h2>
+        <p>You've been using the screen for <span id="breakDuration"></span>.</p>
+        <p>Look away from the screen for 20 seconds!</p>
+        <button onclick="closeAlert()">I Took My Break</button>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2023 PostureAI. All rights reserved. | <a href="#" style="color: var(--primary-color);">Privacy Policy</a> | <a href="#" style="color: var(--primary-color);">Terms of Service</a></p>
+    </footer>
+
+    <!-- Audio Elements -->
+    <audio id="postureChime" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="breakSound" src="https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3" preload="auto"></audio>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/pose@0.8/dist/teachablemachine-pose.min.js"></script>
+    <script>
+        // Posture Detection Variables
+        const URL = "https://teachablemachine.withgoogle.com/models/mVbf1UXY6/";
+        let model, webcam, ctx, labelContainer, maxPredictions;
+        let unhealthyPostureTime = 0;
+        let healthyPostureTime = 0;
+        let alertCount = 0;
+        const postureChime = document.getElementById('postureChime');
+        const breakSound = document.getElementById('breakSound');
+        let isAlertPlaying = false;
+        let previousPosture = "";
+        let isCameraOn = false;
+        let notificationShown = false;
+        let animationFrameId;
+        let postureScore = 0;
+        let scoreUpdateInterval;
+
+        // Screen Break Timer Variables
+        let breakInterval;
+        let timerSeconds = 0;
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Request notification permission
+            if (Notification.permission !== 'granted') {
+                Notification.requestPermission();
+            }
+
+            // Set up event listeners
+            document.getElementById('toggleButton').addEventListener('click', toggleCamera);
+            document.getElementById('breakTimer').addEventListener('change', handleTimerChange);
+        });
+
+        // Timer Functions
+        function handleTimerChange() {
+            clearInterval(breakInterval);
+            const minutes = parseInt(this.value);
+            
+            if (minutes > 0) {
+                timerSeconds = minutes * 60;
+                updateTimerDisplay();
+                
+                breakInterval = setInterval(() => {
+                    timerSeconds--;
+                    updateTimerDisplay();
+                    
+                    if (timerSeconds <= 0) {
+                        showBreakAlert(minutes);
+                        clearInterval(breakInterval);
+                    }
+                }, 1000);
+            } else {
+                document.getElementById('timerDisplay').textContent = '';
+            }
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timerSeconds / 60);
+            const secs = timerSeconds % 60;
+            document.getElementById('timerDisplay').textContent = `${mins}m ${secs}s`;
+        }
+
+        function showBreakAlert(minutes) {
+            document.getElementById('breakDuration').textContent = `${minutes} minute${minutes > 1 ? 's' : ''}`;
+            document.getElementById('breakAlert').style.display = 'block';
+            breakSound.play();
+        }
+
+        function closeAlert() {
+            document.getElementById('breakAlert').style.display = 'none';
+            document.getElementById('breakTimer').value = '0';
+            document.getElementById('timerDisplay').textContent = '';
+        }
+
+        // Posture Detection Functions
+        async function toggleCamera() {
+            const button = document.getElementById("toggleButton");
+
+            if (!isCameraOn) {
+                button.innerHTML = '<i class="fas fa-stop"></i> Stop Detection';
+                button.classList.add("stop");
+                await init();
+                isCameraOn = true;
+                
+                // Start updating posture score
+                scoreUpdateInterval = setInterval(updatePostureScore, 1000);
+            } else {
+                button.innerHTML = '<i class="fas fa-play"></i> Start Detection';
+                button.classList.remove("stop");
+                stopCamera();
+                isCameraOn = false;
+                
+                // Stop updating posture score
+                clearInterval(scoreUpdateInterval);
+            }
+        }
+
+        function updatePostureScore() {
+            const totalTime = unhealthyPostureTime + healthyPostureTime;
+            if (totalTime > 0) {
+                postureScore = Math.round((healthyPostureTime / totalTime) * 100);
+                document.getElementById('postureScore').textContent = `${postureScore}%`;
+            }
+            
+            document.getElementById('goodPostureTime').textContent = `${healthyPostureTime}s`;
+            document.getElementById('alertCount').textContent = alertCount;
+        }
+
+        async function init() {
+            const modelURL = URL + "model.json";
+            const metadataURL = URL + "metadata.json";
+
+            model = await tmPose.load(modelURL, metadataURL);
+            maxPredictions = model.getTotalClasses();
+
+            const size = 400;
+            webcam = new tmPose.Webcam(size, size, true);
+            await webcam.setup();
+            await webcam.play();
+            window.requestAnimationFrame(loop);
+
+            const canvas = document.getElementById("canvas");
+            canvas.width = size;
+            canvas.height = size;
+            ctx = canvas.getContext("2d");
+
+            labelContainer = document.getElementById("label-container");
+            labelContainer.innerHTML = '';
+            
+            for (let i = 0; i < maxPredictions; i++) {
+                const labelDiv = document.createElement("div");
+                labelDiv.classList.add("label");
+                labelContainer.appendChild(labelDiv);
+            }
+
+            // Reset stats
+            unhealthyPostureTime = 0;
+            healthyPostureTime = 0;
+            alertCount = 0;
+            postureScore = 0;
+            updatePostureScore();
+
+            // Listen for tab visibility change
+            document.addEventListener("visibilitychange", handleVisibilityChange);
+        }
+
+        async function loop() {
+            if (isCameraOn) {
+                webcam.update();
+                await predict();
+                animationFrameId = window.requestAnimationFrame(loop);
+            }
+        }
+
+        async function predict() {
+            const { pose, posenetOutput } = await model.estimatePose(webcam.canvas);
+            const prediction = await model.predict(posenetOutput);
+
+            let maxProbability = 0;
+            let maxIndex = 0;
+            let currentPosture = "";
+
+            for (let i = 0; i < maxPredictions; i++) {
+                if (prediction[i].probability > maxProbability) {
+                    maxProbability = prediction[i].probability;
+                    maxIndex = i;
+                }
+            }
+
+            currentPosture = prediction[maxIndex].className.toLowerCase();
+
+            if (currentPosture !== previousPosture) {
+                unhealthyPostureTime = 0;
+                stopAlarm();
+                notificationShown = false;
+            }
+
+            for (let i = 0; i < maxPredictions; i++) {
+                const percentage = (prediction[i].probability * 100).toFixed(2);
+                const classPrediction = `${prediction[i].className}: ${percentage}%`;
+                const labelDiv = labelContainer.childNodes[i];
+
+                labelDiv.innerHTML = `<span>${prediction[i].className}</span><span>${percentage}%</span>`;
+
+                if (i === maxIndex) {
+                    if (currentPosture.includes("unhealthy")) {
+                        labelDiv.classList.add("bad");
+                        labelDiv.classList.remove("good");
+                        unhealthyPostureTime += 1;
+
+                        if (unhealthyPostureTime >= 60) {
+                            playAlarm();
+                            showNotification();
+                            alertCount++;
+                            updatePostureScore();
+                        }
+                    } else {
+                        labelDiv.classList.add("good");
+                        labelDiv.classList.remove("bad");
+                        healthyPostureTime += 1;
+                        stopAlarm();
+                    }
+                } else {
+                    labelDiv.classList.remove("good", "bad");
+                }
+            }
+
+            previousPosture = currentPosture;
+            drawPose(pose);
+        }
+
+        function handleVisibilityChange() {
+            if (document.visibilityState === 'visible' && isCameraOn) {
+                webcam.play();
+                window.requestAnimationFrame(loop);
+            } else if (document.visibilityState === 'hidden' && isCameraOn) {
+                if (isAlertPlaying) {
+                    postureChime.play();
+                }
+                webcam.pause();
+                window.cancelAnimationFrame(animationFrameId);
+            }
+        }
+
+        function playAlarm() {
+            if (!isAlertPlaying) {
+                // Play the posture chime
+                postureChime.currentTime = 0;
+                postureChime.play();
+                isAlertPlaying = true;
+                
+                // Add visual alert to the page
+                const alertBanner = document.createElement('div');
+                alertBanner.style.position = 'fixed';
+                alertBanner.style.bottom = '20px';
+                alertBanner.style.left = '50%';
+                alertBanner.style.transform = 'translateX(-50%)';
+                alertBanner.style.backgroundColor = 'var(--danger-color)';
+                alertBanner.style.color = 'white';
+                alertBanner.style.padding = '15px 30px';
+                alertBanner.style.borderRadius = 'var(--border-radius)';
+                alertBanner.style.boxShadow = 'var(--box-shadow)';
+                alertBanner.style.zIndex = '1000';
+                alertBanner.style.display = 'flex';
+                alertBanner.style.alignItems = 'center';
+                alertBanner.style.gap = '10px';
+                alertBanner.innerHTML = `
+                    <i class="fas fa-exclamation-triangle" style="font-size: 1.5rem;"></i>
+                    <span>Poor Posture Detected! Please adjust your sitting position.</span>
+                `;
+                alertBanner.id = 'postureAlertBanner';
+                document.body.appendChild(alertBanner);
+                
+                // Remove after 5 seconds
+                setTimeout(() => {
+                    if (document.getElementById('postureAlertBanner')) {
+                        document.body.removeChild(alertBanner);
+                    }
+                }, 5000);
+            }
+        }
+
+        function stopAlarm() {
+            if (isAlertPlaying) {
+                postureChime.pause();
+                postureChime.currentTime = 0;
+                isAlertPlaying = false;
+                
+                // Remove visual alert if it exists
+                if (document.getElementById('postureAlertBanner')) {
+                    document.body.removeChild(document.getElementById('postureAlertBanner'));
+                }
+            }
+        }
+
+        function stopCamera() {
+            webcam.stop();
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            labelContainer.innerHTML = "";
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+        }
+
+        function drawPose(pose) {
+            if (webcam.canvas) {
+                ctx.drawImage(webcam.canvas, 0, 0);
+                if (pose) {
+                    const minPartConfidence = 0.5;
+                    tmPose.drawKeypoints(pose.keypoints, minPartConfidence, ctx);
+                    tmPose.drawSkeleton(pose.keypoints, minPartConfidence, ctx);
+                }
+            }
+        }
+
+        function showNotification() {
+            if (Notification.permission === 'granted' && !notificationShown) {
+                new Notification("⚠️ Poor Posture Alert", {
+                    body: "You are in a very inappropriate posture. Sitting in such a posture can cause neck or backache and may lead to spondylitis in the long term.",
+                    icon: 'https://cdn-icons-png.flaticon.com/512/711/711284.png'
+                });
+                notificationShown = true;
+            }
+        }
+    </script>
+</body>
+</html>
